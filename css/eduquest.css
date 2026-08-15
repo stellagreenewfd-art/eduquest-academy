@@ -220,6 +220,88 @@
 .coop-tip { margin-top: 10px; }
 
 /* ============================================================
+   选教材：按出版社分组
+   ============================================================ */
+.book-groups { padding: 8px 0 24px; }
+.book-group { max-width: 760px; margin: 0 auto; }
+.book-group-title {
+  font-weight: 900; color: #fff; text-shadow: 2px 2px 0 #000;
+  padding: 14px 12px 4px; font-size: 1.05rem;
+}
+.book-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 12px; padding: 8px 12px 6px; max-width: 720px; margin: 0 auto;
+}
+
+/* ============================================================
+   共享「先玩后答」引擎 PlayQuiz（6 个主题世界复用）
+   ============================================================ */
+.pq-screen { padding-bottom: 90px; }
+.pq-hud { display: flex; gap: 10px; justify-content: center; padding: 8px 12px; flex-wrap: wrap; }
+.pq-prog, .pq-energy {
+  background: #1c1c1c; border: 3px solid #000; border-radius: 6px;
+  padding: 6px 12px; font-weight: 800; font-size: .95rem;
+}
+.pq-stage {
+  position: relative; height: 60vh; margin: 8px 10px;
+  border: 5px solid #2f6b12; border-radius: 10px; overflow: hidden;
+  touch-action: manipulation;
+}
+.pq-stage.siege { border-color: #4f7a1f; }
+.pq-stage.match { border-color: #c85bb0; }
+.pq-stage.maze { border-color: #1a1a5a; }
+.pq-stage.coop { border-color: #6b3a70; }
+.pq-stage.race { border-color: #2b6a99; }
+.pq-track {
+  position: absolute; left: 4%; right: 4%; bottom: 16%;
+  height: 6px; background: repeating-linear-gradient(90deg, #ffffff66 0 14px, #00000033 14px 28px);
+  border-radius: 4px;
+}
+.pq-flag {
+  position: absolute; bottom: 16%; transform: translateX(-50%);
+  font-size: 1.3rem; filter: drop-shadow(1px 1px 1px #000);
+}
+.pq-player {
+  position: absolute; bottom: 20%; font-size: 2.6rem; z-index: 6;
+  transition: left .35s linear; filter: drop-shadow(2px 2px 2px rgba(0,0,0,.4));
+}
+.pq-goal { position: absolute; bottom: 20%; font-size: 2.4rem; z-index: 4; }
+.pq-decor { position: absolute; inset: 0; pointer-events: none; }
+.pq-float {
+  position: absolute; font-size: 1.6rem; opacity: .85;
+  animation: pq-bob 3.5s ease-in-out infinite;
+}
+@keyframes pq-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+.pq-hop { animation: pq-hop .4s ease; }
+@keyframes pq-hop { 30% { transform: translateY(-26px); } }
+.pq-bird {
+  position: absolute; font-size: 1.8rem; z-index: 7; transition: left .5s ease, top .5s ease;
+  filter: drop-shadow(2px 2px 2px #000);
+}
+.pq-pop {
+  position: absolute; font-size: 1.6rem; transform: translate(-50%, -50%);
+  animation: pq-pop .5s ease forwards; pointer-events: none;
+}
+@keyframes pq-pop { from { transform: translate(-50%,-50%) scale(.4); opacity: 1; } to { transform: translate(-50%,-90%) scale(1.4); opacity: 0; } }
+.pq-tip { margin-top: 10px; }
+
+/* ============================================================
+   声音设置
+   ============================================================ */
+.voice-list { max-width: 640px; margin: 10px auto; padding: 0 12px; display: flex; flex-direction: column; gap: 8px; }
+.voice-row {
+  display: flex; align-items: center; gap: 10px; text-align: left;
+  background: var(--panel-light); color: #fff; font-family: inherit;
+  border: 4px solid #1c1c1c; border-radius: 10px; padding: 12px 14px; cursor: pointer;
+  box-shadow: inset -3px -4px 0 rgba(0,0,0,.22), 0 4px 0 rgba(0,0,0,.3);
+}
+.voice-row:active { transform: translateY(3px); }
+.voice-row.voice-cur { border-color: #f5c518; background: #4a3f12; }
+.voice-name { font-weight: 800; font-size: 1rem; flex: 1; }
+.voice-lang { font-size: .78rem; color: #cfcfcf; }
+.voice-ok { color: #f5c518; font-weight: 900; font-size: .85rem; }
+
+/* ============================================================
    小屏优化
    ============================================================ */
 @media (max-width: 420px) {

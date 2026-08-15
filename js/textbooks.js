@@ -1042,7 +1042,9 @@ var UNITS = [];
 function selectBook(i) {
   Cur.bookId = i;
   UNITS.length = 0;
-  TEXTBOOKS[i].units.forEach(u => UNITS.push(u));
+  const tb = TEXTBOOKS[i];
+  const units = (tb && typeof tb.units === 'function') ? tb.units() : (tb ? tb.units : []);
+  units.forEach(u => UNITS.push(u));
   Save.save();
 }
 function getBook() { return TEXTBOOKS[Cur.bookId]; }

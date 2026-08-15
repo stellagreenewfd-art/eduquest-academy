@@ -606,6 +606,7 @@ const Games = (() => {
         <h3>学习建议</h3>
         <div class="parent-advice">${parentAdvice()}</div>
         <button class="btn" onclick="Main.changeBook()">🔄 更换教材 / 游戏</button>
+        <button class="btn" onclick="Audio2.click();Main.voiceSettings()">🎤 声音设置</button>
         <p class="hint">数据仅保存在本设备浏览器中，不会上传。清除浏览器数据会重置进度。</p>
       </div>
     `);

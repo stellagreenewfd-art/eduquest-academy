@@ -33,6 +33,7 @@ const Save = (() => {
     adv: [], wolf: false, fortuneUntil: 0, musicOff: false,
     playSeconds: 0, startedAt: Date.now(),
     selBook: 0, selWorld: 'mc',
+    voiceName: '',            // 家长选定的美式女声（持久化）
     books: {}                 // bookId -> freshBook()
   });
 
@@ -141,18 +142,37 @@ const Audio2 = (() => {
   };
 })();
 
-/* ---------- Speech（强制美式英语 TTS + 麦克风音量检测） ---------- */
+/* ---------- Speech（高质量美式女声 TTS + 麦克风音量检测） ---------- */
 const Speech2 = (() => {
   let voice = null, zhVoice = null;
   let _u = null;
 
+  // 优先选用的高质量「美式女主持人」声线（按此顺序匹配）
+  const FEMALE_PREF = [
+    'Samantha', 'Victoria', 'Allison', 'Aria', 'Jenny', 'Zira',
+    'Google US English', 'Microsoft Aria Online', 'Microsoft Aria',
+    'Microsoft Jenny Online', 'Microsoft Jenny', 'Microsoft Zira',
+    'Serena', 'Joanna', 'Susan', 'female'
+  ];
+  const isFemale = n => FEMALE_PREF.some(p => String(n).toLowerCase().includes(p.toLowerCase()));
+
   function loadVoices() {
     if (!('speechSynthesis' in window)) return;
     const vs = speechSynthesis.getVoices();
-    // 强制优先美式英语 en-US
-    voice = vs.find(v => /en[-_]US/i.test(v.lang)) ||
-            vs.find(v => /en[-_]GB/i.test(v.lang)) ||
-            vs.find(v => /^en/i.test(v.lang)) || null;
+    // 1) 家长显式指定的声线（持久化）
+    if (Save.data.voiceName) {
+      const sel = vs.find(v => v.name === Save.data.voiceName && /^en/i.test(v.lang));
+      if (sel) { voice = sel; }
+    }
+    // 2) 未指定时，优先「美式 + 女声」
+    if (!voice) {
+      voice = vs.find(v => /en[-_]US/i.test(v.lang) && isFemale(v.name)) ||
+              vs.find(v => /en[-_]US/i.test(v.lang)) ||
+              vs.find(v => /en[-_]GB/i.test(v.lang) && isFemale(v.name)) ||
+              vs.find(v => /en[-_]GB/i.test(v.lang)) ||
+              vs.find(v => /^en/i.test(v.lang) && isFemale(v.name)) ||
+              vs.find(v => /^en/i.test(v.lang)) || null;
+    }
     zhVoice = vs.find(v => /zh[-_]CN/i.test(v.lang)) ||
               vs.find(v => /^zh/i.test(v.lang)) || null;
   }
@@ -173,7 +193,7 @@ const Speech2 = (() => {
 
   function cancelAll() { if ('speechSynthesis' in window) speechSynthesis.cancel(); }
 
-  function speakRaw(text, { zh = false, rate = 0.9, pitch = 1.0 } = {}) {
+  function speakRaw(text, { zh = false, rate = 0.95, pitch = 1.0 } = {}) {
     return ensureVoices().then(() => new Promise(resolve => {
       if (!('speechSynthesis' in window)) { resolve(false); return; }
       try {
@@ -183,7 +203,7 @@ const Speech2 = (() => {
           if (zhVoice) u.voice = zhVoice;
           u.lang = 'zh-CN';
         } else {
-          if (voice) u.voice = voice;       // 美式英语 voice
+          if (voice) u.voice = voice;       // 美式英语女声
           u.lang = voice ? voice.lang : 'en-US';
         }
         u.rate = rate; u.pitch = pitch;
@@ -197,11 +217,11 @@ const Speech2 = (() => {
       } catch (e) { resolve(false); }
     })).catch(() => false);
   }
-  function say(text, rate = 0.9) { return speakRaw(text, { zh: false, rate }); }
-  function sayAuto(text, rate = 0.88) {
+  function say(text, rate = 0.95) { return speakRaw(text, { zh: false, rate }); }
+  function sayAuto(text, rate = 0.9) {
     text = String(text).replace(/＿+/g, ' blank ').replace(/\s*\|\s*/g, '. ');
     const zh = /[一-鿿]/.test(text);
-    return speakRaw(text, { zh, rate: zh ? 0.85 : rate });
+    return speakRaw(text, { zh, rate: zh ? 0.88 : rate });
   }
   // 整题朗读：先读题干，再依次读选项（美式英语）
   function quizRead(q, options = [], withZh = false) {
@@ -232,7 +252,21 @@ const Speech2 = (() => {
       });
     } catch (e) { return null; }
   }
-  return { cancelAll, say, sayAuto, quizRead, listenOnce, get supported() { return 'speechSynthesis' in window; } };
+  function listVoices() {
+    if (!('speechSynthesis' in window)) return [];
+    return speechSynthesis.getVoices()
+      .filter(v => /^en/i.test(v.lang))
+      .map(v => ({ name: v.name, lang: v.lang, female: isFemale(v.name) }))
+      .sort((a, b) => (b.female - a.female) || (a.lang.includes('US') - b.lang.includes('US')));
+  }
+  function setVoice(name) {
+    Save.data.voiceName = name || '';
+    Save.save();
+    loadVoices();
+    if (voice) return say('Hello! I am your English teacher. ' + (Cur.bookName || ''), 0.95);
+    return Promise.resolve(false);
+  }
+  return { cancelAll, say, sayAuto, quizRead, listenOnce, listVoices, setVoice, get supported() { return 'speechSynthesis' in window; } };
 })();
 
 /* ---------- UI（场景切换 / 弹窗 / 通用部件） ---------- */
