@@ -53,8 +53,8 @@ const Save = (() => {
       data = Object.assign(fresh(), parsed);
       Cur.bookId = data.selBook || 0;
       Cur.world = data.selWorld || 'mc';
-      // 补全缺字段
-      Object.values(data.books).forEach(b => Object.assign(freshBook(), b));
+      // 补全缺字段：以 freshBook 为底，叠加已存数据（保留存档），再写回
+      Object.keys(data.books).forEach(id => { data.books[id] = Object.assign(freshBook(), data.books[id]); });
     } catch (e) {
       try {
         const bak = JSON.parse(localStorage.getItem(BAK));

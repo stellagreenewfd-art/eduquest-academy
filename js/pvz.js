@@ -171,7 +171,7 @@ const PVZ = (() => {
 
   function quit() {
     running = false; clearInterval(timer);
-    if (window.AskOverlay && document.querySelector('.overlay')) UI.closeOverlay(document.querySelector('.overlay'));
+    if (document.querySelector('.overlay')) UI.closeOverlay(document.querySelector('.overlay'));
     Main.biome(unit.id);
   }
 
