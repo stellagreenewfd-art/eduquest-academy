@@ -1,0 +1,231 @@
+/* ============================================================
+   EduQuest · eduquest.css
+   新屏幕样式：标题 / 选教材 / 选世界 / 单元地图 / 关卡营地 /
+   PVZ·Mario·Coop 主题世界 / 阻塞问答弹窗
+   与 style.css 的 Minecraft 像素风保持一致
+   ============================================================ */
+
+/* ---------- 标题屏 ---------- */
+.home-screen { text-align: center; padding: 36px 20px; }
+.home { max-width: 560px; margin: 0 auto; padding-top: 6vh; }
+.home-logo { font-size: 3.4rem; animation: bob 2.2s infinite ease-in-out; }
+.home-title {
+  font-size: 2.8rem; margin: 14px 0 2px; letter-spacing: 3px;
+  color: #fff; text-shadow: 4px 4px 0 #2f6b12, 8px 8px 0 rgba(0,0,0,.25);
+}
+.home-sub { font-size: 1.2rem; font-weight: 800; color: #eaf7ff; text-shadow: 2px 2px 0 rgba(0,0,0,.4); }
+.home-tag { font-size: .98rem; font-weight: 700; margin: 10px 0 26px; color: #fff8d6; text-shadow: 1px 1px 2px rgba(0,0,0,.45); }
+.home-btns { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.home-btns .btn { width: min(320px, 84vw); }
+.home-hint { margin-top: 26px; }
+
+/* ---------- 家长选教材 ---------- */
+.book-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 12px; padding: 16px 12px; max-width: 720px; margin: 0 auto;
+}
+.book-card {
+  position: relative; overflow: hidden;
+  background: var(--panel); color: #fff;
+  border: 4px solid #1c1c1c; border-radius: 12px;
+  box-shadow: inset -3px -4px 0 rgba(0,0,0,.25), inset 3px 4px 0 rgba(255,255,255,.12), 0 5px 0 rgba(0,0,0,.3);
+  padding: 16px 12px 14px; text-align: center; font-family: inherit; cursor: pointer;
+}
+.book-card:active { transform: translateY(3px); box-shadow: inset 3px 4px 0 rgba(0,0,0,.25); }
+.book-bar { position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--bc); }
+.book-icon { font-size: 2.4rem; margin-top: 4px; }
+.book-name { font-weight: 900; font-size: 1.05rem; margin-top: 4px; text-shadow: 1px 1px 0 #000; }
+.book-pub { font-size: .74rem; color: #cfcfcf; margin: 3px 0; }
+.book-desc { font-size: .8rem; color: #e8e8e8; line-height: 1.5; margin: 6px 0; min-height: 3.2em; }
+.book-units { font-size: .8rem; font-weight: 800; color: var(--gold); }
+
+/* ---------- 小孩选游戏世界 ---------- */
+.world-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 14px; padding: 16px 12px; max-width: 720px; margin: 0 auto;
+}
+.world-card {
+  background: var(--panel-light); color: #fff;
+  border: 4px solid #1c1c1c; border-radius: 12px;
+  box-shadow: inset -3px -4px 0 rgba(0,0,0,.22), inset 3px 4px 0 rgba(255,255,255,.1), 0 5px 0 rgba(0,0,0,.3);
+  padding: 20px 12px; text-align: center; font-family: inherit; cursor: pointer;
+}
+.world-card:active { transform: translateY(3px); box-shadow: inset 3px 4px 0 rgba(0,0,0,.22); }
+.world-icon { font-size: 3rem; }
+.world-name { font-weight: 900; font-size: 1.1rem; margin-top: 6px; text-shadow: 1px 1px 0 #000; }
+.world-en { font-size: .72rem; color: #cfcfcf; margin: 2px 0 8px; }
+.world-desc { font-size: .8rem; color: #e8e8e8; line-height: 1.5; }
+
+/* ---------- 单元地图 ---------- */
+.unit-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; padding: 16px 12px; max-width: 720px; margin: 0 auto;
+}
+.unit-card {
+  background: var(--panel); border: 3px solid #1c1c1c; border-radius: 10px;
+  box-shadow: inset -3px -4px 0 rgba(0,0,0,.25), inset 3px 4px 0 rgba(255,255,255,.12);
+  padding: 14px 6px; text-align: center; cursor: pointer; transition: transform .1s;
+}
+.unit-card:active { transform: scale(.96); }
+.unit-locked { filter: grayscale(.9) brightness(.6); }
+.unit-icon { font-size: 2.2rem; }
+.unit-name { font-weight: 800; margin-top: 4px; text-shadow: 1px 1px 0 #000; font-size: .92rem; }
+.unit-biome { font-size: .72rem; color: #bbb; margin: 2px 0; }
+.unit-meta { font-size: .76rem; color: var(--gold); font-weight: 700; margin-top: 4px; }
+.center-btns { display: flex; flex-direction: column; gap: 12px; align-items: center; padding: 30px 16px; }
+.center-btns .btn { width: min(320px, 84vw); }
+
+/* ---------- 关卡营地 ---------- */
+.biome-mission {
+  max-width: 640px; margin: 12px auto; padding: 10px 16px;
+  background: #f4e2b8; color: var(--ink);
+  border: 4px solid #8a5a2b; border-radius: 8px; font-weight: 700; text-align: center;
+  box-shadow: 0 4px 0 rgba(0,0,0,.25);
+}
+.biome-mission i { color: #6b4c22; font-style: italic; }
+.biome-acts {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 12px; padding: 16px 14px; max-width: 640px; margin: 0 auto;
+}
+.act-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: var(--panel-light); color: #fff;
+  border: 4px solid #1c1c1c; border-radius: 10px;
+  box-shadow: inset -4px -6px 0 rgba(0,0,0,.22), inset 4px 6px 0 rgba(255,255,255,.1), 0 5px 0 rgba(0,0,0,.3);
+  padding: 18px 8px; font-family: inherit; cursor: pointer; font-size: 1rem; font-weight: 800;
+}
+.act-btn:active { transform: translateY(3px); box-shadow: inset 4px 6px 0 rgba(0,0,0,.22); }
+.act-icon { font-size: 2.4rem; }
+.act-primary { background: #3e7031; grid-column: 1 / -1; }
+.act-boss { background: #8a2f2f; }
+
+/* ---------- 阻塞问答弹窗 ---------- */
+.q-modal .q-icon { font-size: 3.4rem; margin-bottom: 4px; }
+.q-modal h3 { color: #2f6b12; margin-bottom: 6px; }
+.q-sub { font-size: .9rem; color: #6b4c22; font-weight: 700; margin-bottom: 6px; }
+.q-q {
+  font-size: 1.2rem; font-weight: 900; margin: 8px 0;
+  text-shadow: none; color: var(--ink);
+}
+.q-opts { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 6px; }
+
+/* ============================================================
+   PVZ 植物大战僵尸
+   ============================================================ */
+.pvz-screen { padding-bottom: 90px; }
+.pvz-hud {
+  display: flex; gap: 10px; justify-content: center; align-items: center;
+  padding: 8px 12px; flex-wrap: wrap;
+}
+.pvz-lives, .pvz-prog, .pvz-energy {
+  background: #1c1c1c; border: 3px solid #000; border-radius: 6px;
+  padding: 6px 12px; font-weight: 800; font-size: .95rem;
+}
+.pvz-stage {
+  position: relative; height: 64vh; margin: 8px 10px;
+  background: linear-gradient(#bfe9a0 0%, #8ed06a 18%, #6abe30 19%, #57a024 100%);
+  border: 5px solid #2f6b12; border-radius: 10px; overflow: hidden;
+}
+.pvz-house {
+  position: absolute; left: 4px; top: 50%; transform: translateY(-50%);
+  font-size: 2.4rem; z-index: 5; filter: drop-shadow(2px 2px 2px rgba(0,0,0,.4));
+}
+.pvz-shooter {
+  position: absolute; left: 6%; top: 50%; transform: translateY(-50%);
+  font-size: 1.8rem; text-align: center; z-index: 4; line-height: 1.1;
+}
+.pvz-zombie {
+  position: absolute; font-size: 2.2rem; z-index: 6;
+  filter: drop-shadow(2px 2px 2px rgba(0,0,0,.45));
+  transition: left .12s linear;
+}
+.pvz-die { animation: pvz-die .5s forwards; }
+@keyframes pvz-die { to { transform: rotate(90deg) scale(.2); opacity: 0; } }
+.pvz-pea {
+  position: absolute; left: 9%; top: 50%; font-size: 1.4rem; z-index: 7;
+  animation: pvz-pea .5s linear forwards;
+}
+@keyframes pvz-pea { to { left: 92%; opacity: .2; } }
+.pvz-tip { margin-top: 10px; }
+
+/* ============================================================
+   Mario 超级马里奥
+   ============================================================ */
+.mario-screen { padding-bottom: 90px; }
+.mario-hud { display: flex; gap: 10px; justify-content: center; padding: 8px 12px; }
+.mario-prog, .mario-energy {
+  background: #1c1c1c; border: 3px solid #000; border-radius: 6px;
+  padding: 6px 12px; font-weight: 800; font-size: .95rem;
+}
+.mario-stage {
+  position: relative; height: 60vh; margin: 8px 10px;
+  background: linear-gradient(#7ec8f7 0%, #a5ddf9 62%, #6abe30 63%, #57a024 100%);
+  border: 5px solid #2b6a99; border-radius: 10px; overflow: hidden;
+}
+.mario-ground {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 38%;
+  background: repeating-linear-gradient(90deg, #8a5a2b 0 24px, #7a4f24 24px 48px);
+  border-top: 6px solid #4f7a1f;
+}
+.mario-flag { position: absolute; bottom: 38%; font-size: 2.4rem; z-index: 4; transition: none; }
+.mario-player {
+  position: absolute; bottom: 38%; font-size: 2.4rem; z-index: 6;
+  transition: left .6s cubic-bezier(.3,.8,.3,1);
+  filter: drop-shadow(2px 2px 2px rgba(0,0,0,.4));
+}
+.mario-blocks { position: absolute; left: 0; right: 0; bottom: 60%; height: 0; }
+.mario-block {
+  position: absolute; top: -10px; width: 38px; height: 38px;
+  background: #c98a2b; border: 3px solid #6b4a17; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
+  box-shadow: inset -2px -3px 0 rgba(0,0,0,.25); z-index: 5;
+}
+.mario-bump { animation: mario-bump .3s; }
+@keyframes mario-bump { 30% { transform: translateY(-12px); } }
+.mario-break { animation: mario-break .4s forwards; }
+@keyframes mario-break { to { transform: scale(.2) rotate(40deg); opacity: 0; } }
+.mario-tip { margin-top: 10px; }
+
+/* ============================================================
+   Coop 双人成行
+   ============================================================ */
+.coop-screen { padding-bottom: 90px; }
+.coop-hud { display: flex; gap: 10px; justify-content: center; padding: 8px 12px; }
+.coop-prog, .coop-energy {
+  background: #1c1c1c; border: 3px solid #000; border-radius: 6px;
+  padding: 6px 12px; font-weight: 800; font-size: .95rem;
+}
+.coop-stage {
+  position: relative; height: 60vh; margin: 8px 10px;
+  background: linear-gradient(#caa6e8 0%, #e6d2f5 60%, #6abe30 61%, #57a024 100%);
+  border: 5px solid #6b3a70; border-radius: 10px; overflow: hidden;
+}
+.coop-cody, .coop-may {
+  position: absolute; bottom: 38%; font-size: 2.6rem; z-index: 6;
+  display: flex; flex-direction: column; align-items: center;
+  transition: left .6s cubic-bezier(.3,.8,.3,1);
+  filter: drop-shadow(2px 2px 2px rgba(0,0,0,.4));
+}
+.coop-cody { left: 8%; }
+.coop-cody span, .coop-may span { font-size: .7rem; font-weight: 800; color: #fff; text-shadow: 1px 1px 0 #000; }
+.coop-may { left: 14%; }
+.coop-gates { position: absolute; left: 0; right: 0; bottom: 60%; height: 0; }
+.coop-gate {
+  position: absolute; top: -6px; font-size: 2.2rem;
+  filter: drop-shadow(2px 2px 2px rgba(0,0,0,.4)); transition: transform .3s;
+}
+.coop-gate.coop-active { animation: coop-shake .6s infinite; }
+@keyframes coop-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.coop-gate.coop-open { transform: scale(1.3); }
+.coop-tip { margin-top: 10px; }
+
+/* ============================================================
+   小屏优化
+   ============================================================ */
+@media (max-width: 420px) {
+  .home-title { font-size: 2.1rem; }
+  .book-grid, .world-grid { gap: 8px; padding: 10px 8px; }
+  .unit-grid { gap: 8px; }
+  .biome-acts { gap: 8px; padding: 12px 8px; }
+  .act-icon { font-size: 2rem; }
+}
