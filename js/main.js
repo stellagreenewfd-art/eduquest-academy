@@ -10,7 +10,7 @@ const Main = (() => {
     { id: 'mc',          icon: '🟩', name: '我的世界',     en: 'Minecraft',        desc: '方块沙盒：挖矿学单词、自由建造、打怪说英语' },
     { id: 'pvz',         icon: '🧟', name: '植物大战僵尸', en: 'Plants vs Zombies', desc: '真实塔防：种植物攒阳光、豌豆射手自动开火，用英语放魔法豌豆' },
     { id: 'mario',       icon: '🍄', name: '超级马里奥',   en: 'Super Mario',      desc: '横版跳跃：自动奔跑、踩怪、跨坑、顶?砖，旗点答英语' },
-    { id: 'coop',        icon: '👫', name: '双人成行',     en: 'It Takes Two',     desc: '双人协作：两人合力上跷跷板搭桥，各答一题才开门' },
+    { id: 'planewar',    icon: '✈️', name: '飞机大战',     en: 'Sky Force',        desc: '纵向空战：拖动战机自动开火击落敌机，英语大招清屏' },
     { id: 'angrybirds',  icon: '🐦', name: '愤怒的小鸟',   en: 'Angry Birds',      desc: '弹弓物理：拖拽瞄准发射，砸塌猪城堡，英语换炸弹鸟' },
     { id: 'templerun',   icon: '🏃', name: '神庙逃亡',     en: 'Temple Run',       desc: '三跑道跑酷：切道/跳/滑躲陷阱，关卡门答英语冲刺' },
     { id: 'candcrush',   icon: '🍬', name: '糖果传奇',     en: 'Candy Crush',      desc: '三消：交换糖果连成线消除，英语换魔法锤' },
@@ -19,7 +19,7 @@ const Main = (() => {
 
   // 非 MC 世界的「开始游戏」调用映射
   const WORLD_PLAY = {
-    pvz: 'PVZ', mario: 'Mario', coop: 'Coop',
+    pvz: 'PVZ', mario: 'Mario', planewar: 'PlaneWar',
     angrybirds: 'AngryBirds', templerun: 'TempleRun', candcrush: 'CandyCrush', pacman: 'PacMan'
   };
 
@@ -82,7 +82,8 @@ const Main = (() => {
   function resume() {
     Audio2.click();
     if (Save.data.selBook != null) { Cur.bookId = Save.data.selBook; selectBook(Cur.bookId); }
-    if (Save.data.selWorld) Cur.world = Save.data.selWorld;
+    if (Save.data.selWorld && WORLDS.some(w => w.id === Save.data.selWorld)) Cur.world = Save.data.selWorld;
+    else Cur.world = 'mc';
     map();
   }
 

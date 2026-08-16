@@ -343,6 +343,7 @@
   padding: 12px 18px; cursor: pointer; box-shadow: inset -3px -4px 0 rgba(0,0,0,.2), 0 4px 0 rgba(0,0,0,.3);
 }
 .ab-bomb:active, .cc-magic:active, .pm-rush:active { transform: translateY(3px); box-shadow: inset -2px -2px 0 rgba(0,0,0,.2), 0 1px 0 rgba(0,0,0,.3); }
+.ab-hint { align-self: center; color: #ffe9a8; font-size: .82rem; opacity: .9; padding-left: 6px; }
 
 /* ============================================================
    PVZ（真实塔防）
