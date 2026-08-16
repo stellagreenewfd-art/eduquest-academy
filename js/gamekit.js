@@ -131,16 +131,24 @@ const GameKit = (() => {
       const t = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
       return { x: (t.clientX - r.left), y: (t.clientY - r.top) };
     }
-    const down = e => { e.preventDefault(); handlers.down && handlers.down(pos(e)); };
+    const down = e => {
+      e.preventDefault();
+      try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+      handlers.down && handlers.down(pos(e));
+    };
     const move = e => { if (handlers.move) handlers.move(pos(e)); };
     const up = e => { if (handlers.up) handlers.up(pos(e)); };
+    // 指针在画布外松开 / 被系统取消(触屏手势拦截)时，同样触发 release，避免「松手不动」
+    const cancel = () => { if (handlers.up) handlers.up(null); };
     cv.addEventListener('pointerdown', down);
     if (handlers.move) cv.addEventListener('pointermove', move);
     cv.addEventListener('pointerup', up);
+    cv.addEventListener('pointercancel', cancel);
     onCleanup.push(() => {
       cv.removeEventListener('pointerdown', down);
       cv.removeEventListener('pointermove', move);
       cv.removeEventListener('pointerup', up);
+      cv.removeEventListener('pointercancel', cancel);
     });
   }
   function bindKeys(map) {

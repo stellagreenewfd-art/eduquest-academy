@@ -10,10 +10,10 @@ const AngryBirds = (() => {
   let unit = null, g = null, paused = false, running = false, asking = false;
   let groundY, slingX, slingY, bird = null, blocks = [], pigs = [], trail = [];
   let birdsLeft = 5, dragging = false, dragPt = null, bombNext = false;
-  const MAXR = 150;         // 最大拉拽半径（更大更好发力）
-  const POWER = 5.4;        // 发射力度系数
-  const G_STEP = 1300 * 0.028; // 轨迹预览每步重力增量
-  const MIN_SPEED = 140;    // 最小出射速度，避免轻拉「不动」
+  const MAXR = 160;         // 最大拉拽半径（更大更好发力）
+  const POWER = 8;          // 发射力度系数（从弹弓发射）
+  const G_STEP = 1000 * 0.028; // 轨迹预览每步重力增量（与 update 的 G 一致）
+  const MIN_SPEED = 130;    // 最小出射速度，避免轻拉「不动」
 
   function play(u) {
     GameKit.cleanup();
@@ -38,7 +38,7 @@ const AngryBirds = (() => {
       <p class="hint game-tip">像真实愤怒的小鸟一样：按住任意位置、把小鸟往左下后方拉，会看到黄色抛物线，松手就朝反方向飞出。砸中或压到绿猪🐷即可消灭。卡关时点💣炸弹鸟，答对英语换上会爆炸的鸟。</p>
     `, 'ab-screen');
     g = GameKit.canvas('abStage');
-    groundY = g.H * 0.86; slingX = g.W * 0.16; slingY = groundY - 64;
+    groundY = g.H * 0.86; slingX = g.W * 0.16; slingY = groundY - 84;
     build();
     bind();
     updatePigs();
@@ -70,7 +70,7 @@ const AngryBirds = (() => {
         const h = document.getElementById('abHint'); if (h) h.textContent = '拉得越远，飞得越有力！';
       },
       move: p => { if (dragging) dragPt = clampPull(p); },
-      up: p => { if (dragging) { dragPt = clampPull(p); launch(); dragging = false; } }
+      up: p => { if (dragging) { if (p) dragPt = clampPull(p); launch(); dragging = false; } }
     });
     // 键盘辅助：方向键调角度，空格发射
     GameKit.bindKeys({
@@ -85,22 +85,25 @@ const AngryBirds = (() => {
     dragging = true;
   }
   function clampPull(p) {
-    let dx = p.x - slingX, dy = p.y - slingY;
+    // 真实 AB：小鸟永远在弹弓左侧，只能往「左下方」拉；禁止拉到地面以下或弹弓右侧（否则会向后飞/钻地）
+    let dx = p.x - slingX;
+    let dy = p.y - slingY;
+    if (dx > 0) dx = 0;                 // 只能往左拉
+    if (dy < 0) dy = 0;                 // 只能往下拉
     const d = Math.hypot(dx, dy);
     if (d > MAXR) { dx = dx / d * MAXR; dy = dy / d * MAXR; }
+    const maxDy = (groundY - 18) - slingY; // 拉拽点不得低于地面
+    if (dy > maxDy) dy = maxDy;
     return { x: slingX + dx, y: slingY + dy };
   }
   function launch() {
     if (!dragPt) return;
-    let dx = slingX - dragPt.x, dy = slingY - dragPt.y;   // 拉弓方向的反方向 = 发射方向
-    let vx = dx * POWER, vy = dy * POWER;
+    // 发射点固定在弹弓，速度方向 = 弹弓指向「反拉拽方向」（永远朝右上）
+    let vx = (slingX - dragPt.x) * POWER;
+    let vy = (slingY - dragPt.y) * POWER;
     const sp = Math.hypot(vx, vy);
-    if (sp < MIN_SPEED) {                                  // 轻拉也保证小鸟向前飞出，不会「不动」
-      const ang = Math.atan2(dy, dx);
-      vx = Math.cos(ang) * MIN_SPEED;
-      vy = Math.sin(ang) * MIN_SPEED - 120;                // 略微上扬
-    }
-    bird = { x: dragPt.x, y: dragPt.y, vx, vy, r: 18, bomb: bombNext, alive: true, rest: 0 };
+    if (sp < MIN_SPEED) { vx = MIN_SPEED; vy = -MIN_SPEED * 0.7; } // 轻拉也保证朝右上飞出，不会「不动」
+    bird = { x: slingX, y: slingY, vx, vy, r: 18, bomb: bombNext, alive: true, rest: 0 };
     bombNext = false;
     birdsLeft--; document.getElementById('abBirds').textContent = '🐦 ' + Math.max(0, birdsLeft);
     Audio2.pop();
@@ -109,7 +112,7 @@ const AngryBirds = (() => {
 
   function update(dt) {
     if (!running || paused || asking) return;
-    const G = 1300;
+    const G = 1000;
     if (bird && bird.alive) {
       bird.vy += G * dt;
       bird.x += bird.vx * dt; bird.y += bird.vy * dt;
@@ -221,13 +224,13 @@ const AngryBirds = (() => {
     });
     // 猪
     pigs.forEach(pg => { if (pg.alive) Sprites.pig(ctx, pg.x, pg.y, 22); });
-    // 瞄准轨迹
+    // 瞄准轨迹（从弹弓出发，模拟真实飞行弧线）
     if (dragging && dragPt) {
       let dx = slingX - dragPt.x, dy = slingY - dragPt.y;
-      let px = dragPt.x, py = dragPt.y, vx = dx * POWER, vy = dy * POWER;
+      let px = slingX, py = slingY, vx = dx * POWER, vy = dy * POWER;
       ctx.fillStyle = 'rgba(255,170,30,0.85)';
-      for (let i = 0; i < 36; i++) { vy += G_STEP; px += vx * 0.028; py += vy * 0.028; if (i % 2 === 0) { ctx.beginPath(); ctx.arc(px, py, 3, 0, 7); ctx.fill(); } if (py > groundY) break; }
-      // 拉拽指示
+      for (let i = 0; i < 40; i++) { vy += G_STEP; px += vx * 0.028; py += vy * 0.028; if (i % 2 === 0) { ctx.beginPath(); ctx.arc(px, py, 3, 0, 7); ctx.fill(); } if (py > groundY) break; }
+      // 拉拽指示（弹弓连到被拉后的小鸟）
       ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
       ctx.beginPath(); ctx.moveTo(slingX, slingY); ctx.lineTo(dragPt.x, dragPt.y); ctx.stroke(); ctx.setLineDash([]);
     }
