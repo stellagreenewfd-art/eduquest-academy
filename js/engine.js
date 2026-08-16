@@ -193,7 +193,7 @@ const Speech2 = (() => {
 
   function cancelAll() { if ('speechSynthesis' in window) speechSynthesis.cancel(); }
 
-  function speakRaw(text, { zh = false, rate = 0.95, pitch = 1.0 } = {}) {
+  function speakRaw(text, { zh = false, rate = 1.0, pitch = 1.0 } = {}) {
     return ensureVoices().then(() => new Promise(resolve => {
       if (!('speechSynthesis' in window)) { resolve(false); return; }
       try {
@@ -217,8 +217,8 @@ const Speech2 = (() => {
       } catch (e) { resolve(false); }
     })).catch(() => false);
   }
-  function say(text, rate = 0.95) { return speakRaw(text, { zh: false, rate }); }
-  function sayAuto(text, rate = 0.9) {
+  function say(text, rate = 1.0) { return speakRaw(text, { zh: false, rate }); }
+  function sayAuto(text, rate = 1.0) {
     text = String(text).replace(/＿+/g, ' blank ').replace(/\s*\|\s*/g, '. ');
     const zh = /[一-鿿]/.test(text);
     return speakRaw(text, { zh, rate: zh ? 0.88 : rate });
@@ -259,14 +259,46 @@ const Speech2 = (() => {
       .map(v => ({ name: v.name, lang: v.lang, female: isFemale(v.name) }))
       .sort((a, b) => (b.female - a.female) || (a.lang.includes('US') - b.lang.includes('US')));
   }
+
+  /* 精简为最多 6 个「清脆美式女声」风格，给用户干净的选择 */
+  const CRISP_ORDER = [
+    'Samantha', 'Aria', 'Jenny', 'Allison', 'Victoria', 'Serena', 'Susan',
+    'Google US English', 'Microsoft Aria Online', 'Microsoft Aria',
+    'Microsoft Jenny Online', 'Microsoft Jenny', 'Microsoft Zira',
+    'Karen', 'Moira', 'Serena (Enhanced)', 'English United States'
+  ];
+  const crispScore = n => {
+    const i = CRISP_ORDER.findIndex(p => String(n).toLowerCase().includes(p.toLowerCase()));
+    return i < 0 ? 999 : i;
+  };
+  function crispVoices() {
+    if (!('speechSynthesis' in window)) return [];
+    const vs = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang));
+    if (!vs.length) return [];
+    const sorted = vs.slice().sort((a, b) =>
+      (b.lang.includes('US') - a.lang.includes('US')) ||
+      (isFemale(b.name) - isFemale(a.name)) ||
+      (crispScore(a.name) - crispScore(b.name)));
+    const seen = new Set(), out = [];
+    for (const v of sorted) {
+      const key = v.name.replace(/\s*\(.*?\)\s*/g, '').replace(/\s*(Online|Enhanced)\s*/gi, '').trim().toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ name: v.name, lang: v.lang, female: isFemale(v.name) });
+      if (out.length >= 6) break;
+    }
+    return out;
+  }
+
   function setVoice(name) {
     Save.data.voiceName = name || '';
     Save.save();
     loadVoices();
-    if (voice) return say('Hello! I am your English teacher. ' + (Cur.bookName || ''), 0.95);
+    const demo = 'Hello! I am your English teacher. Listen and repeat after me!';
+    if (voice) return say(demo, 1.0);
     return Promise.resolve(false);
   }
-  return { cancelAll, say, sayAuto, quizRead, listenOnce, listVoices, setVoice, get supported() { return 'speechSynthesis' in window; } };
+  return { cancelAll, say, sayAuto, quizRead, listenOnce, listVoices, crispVoices, setVoice, get supported() { return 'speechSynthesis' in window; } };
 })();
 
 /* ---------- UI（场景切换 / 弹窗 / 通用部件） ---------- */

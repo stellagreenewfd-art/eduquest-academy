@@ -241,31 +241,40 @@ const Main = (() => {
     `);
   }
 
-  /* ---------- 声音设置（选美式女声） ---------- */
+  /* ---------- 声音设置（精简 6 个清脆美式女声，点击即试听） ---------- */
+  let _voiceList = [];
   function voiceSettings() {
-    const vs = Speech2.listVoices();
+    _voiceList = Speech2.crispVoices();
     const cur = Save.data.voiceName;
-    const rows = vs.length
-      ? vs.map(v => `
-        <button class="voice-row ${v.name === cur ? 'voice-cur' : ''}" data-v="${UI.esc(v.name)}">
+    const rows = _voiceList.length
+      ? _voiceList.map((v, i) => `
+        <button class="voice-row ${v.name === cur ? 'voice-cur' : ''}" data-i="${i}">
           <span class="voice-name">${v.female ? '⭐ ' : '🔊 '}${UI.esc(v.name)}</span>
           <span class="voice-lang">${UI.esc(v.lang)}</span>
-          ${v.name === cur ? '<span class="voice-ok">✓ 使用中</span>' : ''}
+          ${v.name === cur ? '<span class="voice-ok">✓ 使用中</span>' : '<span class="voice-try">▶ 试听</span>'}
         </button>`).join('')
-      : `<p class="hint">设备暂未提供英语语音包，将使用系统默认美式英语发音。</p>`;
+      : `<p class="hint">正在加载英语语音包…若长时间为空，请确认设备的「朗读」/「语音」中已安装美式英语语音。</p>`;
     UI.screen(`
       <div class="topbar">
         <button class="btn btn-back" onclick="Audio2.click();Main.changeBook()">← 返回</button>
         <div class="topbar-title">🎤 声音设置</div>
       </div>
-      <p class="hint">选一个好听的美式女声当英语老师。点任意一项可试听，选中的会记住。</p>
+      <p class="hint">挑一个清脆好听的美式女声当英语老师。点任意一项即可试听，选中的会自动记住。</p>
       <div class="voice-list">${rows}</div>
-      <p class="hint">所有课文都用标准美式英语朗读；不同设备自带的语音不同，挑一个最自然的即可。</p>
+      <p class="hint">课文与题目都用标准美式英语朗读；不同设备自带语音不同，挑最自然的即可。</p>
     `, 'voice-screen');
-    document.querySelectorAll('.voice-row').forEach(el => el.onclick = async () => {
+    // 语音包异步加载：首次为空时，加载完成自动刷新列表
+    if (!_voiceList.length && Speech2.supported) {
+      const onReady = () => { if (!_voiceList.length) voiceSettings(); };
+      speechSynthesis.addEventListener('voiceschanged', onReady, { once: true });
+    }
+    document.querySelectorAll('.voice-row').forEach(el => el.onclick = () => {
+      const v = _voiceList[Number(el.dataset.i)];
+      if (!v) return;
       Audio2.click();
-      await Speech2.setVoice(el.dataset.v);
-      UI.toast('已设为：' + el.dataset.v, 1400);
+      Speech2.cancelAll();
+      Speech2.setVoice(v.name);
+      UI.toast('试听：' + v.name, 1400);
       voiceSettings();
     });
   }

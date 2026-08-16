@@ -8,14 +8,14 @@
 const TempleRun = (() => {
   let unit = null, g = null, paused = false, running = false, asking = false;
   let lane = 1, dist = 0, speed = 250, score = 0, lives = 3, goal = 2400;
-  let obstacles = [], coins = [], invuln = 0, jumpT = 0, slideT = 0;
+  let obstacles = [], coins = [], invuln = 0, jumpT = 0, slideT = 0, quizClock = 14;
   let pStart = null;
   const LANES = 3;
 
   function play(u) {
     GameKit.cleanup();
     unit = u; running = true; paused = false; asking = false;
-    lane = 1; dist = 0; speed = 170; score = 0; lives = 3; invuln = 0; jumpT = 0; slideT = 0;
+    lane = 1; dist = 0; speed = 170; score = 0; lives = 3; invuln = 0; jumpT = 0; slideT = 0; quizClock = 14;
     obstacles = []; coins = [];
     UI.screen(`
       <div class="topbar">
@@ -107,8 +107,9 @@ const TempleRun = (() => {
     obstacles = obstacles.filter(o => o.d > dist - 80);
     coins = coins.filter(c => c.d > dist - 80);
 
-    // 关卡门
-    if (Math.floor(dist) % 600 < speed * dt && Math.floor(dist) >= 600 && !cpsDone(dist)) { gate(); }
+    // 关卡门（参考 MC 节奏：约每 14 秒一次，避免太频繁打断）
+    quizClock -= dt;
+    if (quizClock <= 0 && dist > 150) { quizClock = 14; gate(); }
 
     if (dist >= goal) { win(); return; }
     render();

@@ -11,7 +11,7 @@ const PVZ = (() => {
   let unit = null, g = null, paused = false, running = false;
   let sun = 75, lives = 3, total = 0, spawned = 0, killed = 0;
   let plants = [], zombies = [], peas = [], suns = [];
-  let selected = 'sunflower', nextSpawn = 0, dead = false;
+  let selected = 'sunflower', nextSpawn = 0, dead = false, quizClock = 16;
   const PLANTS = {
     sunflower:  { cost: 50,  hp: 4,  kind: 'sun',     name: '向日葵',   icon: '🌻' },
     peashooter: { cost: 100, hp: 4,  kind: 'shoot',   name: '豌豆射手', icon: '🌱' },
@@ -30,7 +30,7 @@ const PVZ = (() => {
     total = Math.min(unit.vocab.length, 8);
     plants = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
     zombies = []; peas = []; suns = [];
-    nextSpawn = 5;
+    nextSpawn = 5; quizClock = 16;
 
     UI.screen(`
       <div class="topbar">
@@ -153,6 +153,8 @@ const PVZ = (() => {
     zombies = zombies.filter(z => !z.dead);
     suns = suns.filter(s => !s.dead);
     if (spawned >= total && zombies.length === 0 && !dead) win();
+    quizClock -= dt;
+    if (quizClock <= 0) { quizClock = 16; autoGate(); }
     render();
   }
 
@@ -190,6 +192,21 @@ const PVZ = (() => {
   }
   function gainSun(n) { sun += n; updateSun(); }
   function updateSun() { const e = document.getElementById('pvzSun'); if (e) e.textContent = '☀️ ' + sun; }
+
+  function autoGate() {
+    const front = zombies.filter(z => !z.dead).sort((a, b) => a.col - b.col)[0];
+    if (!front) { quizClock = 5; return; }   // 没有僵尸就稍后再问
+    paused = true;
+    GameKit.quizGate(unit, {
+      title: '🌟 魔法豌豆！用英语消灭最前的僵尸',
+      sub: '答对发射超级豌豆，答错僵尸会继续逼近哦',
+      cls: 'pvz-q'
+    }).then(m => {
+      GameKit.award(unit, m.vi);
+      killZ(front); gainSun(25); GameKit.setEnergy(unit.id, 'pvzEnergy');
+      paused = false;
+    });
+  }
 
   function magicPea() {
     const front = zombies.filter(z => !z.dead).sort((a, b) => a.col - b.col)[0];

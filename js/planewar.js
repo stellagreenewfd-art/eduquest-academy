@@ -9,12 +9,12 @@
 const PlaneWar = (() => {
   let unit = null, g = null, paused = false, running = false, asking = false;
   let player, bullets, enemies, ebullets, booms, stars;
-  let lives, score, target, fireT, spawnT, invuln, bombtip;
+  let lives, score, target, fireT, spawnT, invuln, bombtip, quizClock = 16;
 
   function play(u) {
     GameKit.cleanup();
     unit = u; running = true; paused = false; asking = false;
-    lives = 3; score = 0; target = 30; fireT = 0; spawnT = 0.6; invuln = 0;
+    lives = 3; score = 0; target = 30; fireT = 0; spawnT = 0.6; invuln = 0; quizClock = 16;
     bullets = []; enemies = []; ebullets = []; booms = [];
     UI.screen(`
       <div class="topbar">
@@ -47,13 +47,23 @@ const PlaneWar = (() => {
       move: p => { player.tx = p.x; player.ty = p.y; },
       up: p => { player.tx = p.x; player.ty = p.y; }
     });
-    // 空格 = 英语大招（键盘辅助）；方向键持续移动由底部 IIFE 的 keys 状态处理
+    // 空格 = 英语大招（键盘辅助）
     GameKit.bindKeys({ ' ': () => bomb() });
+    // 方向键持续移动（每次进入游戏注册，退出时由 GameKit 清理，避免泄漏）
+    const map = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' };
+    const kd = e => { if (map[e.key]) { e.preventDefault(); keys[map[e.key]] = true; } };
+    const ku = e => { if (map[e.key]) { keys[map[e.key]] = false; } };
+    window.addEventListener('keydown', kd);
+    window.addEventListener('keyup', ku);
+    GameKit.defer(() => { window.removeEventListener('keydown', kd); window.removeEventListener('keyup', ku); });
   }
 
   function update(dt) {
     if (!running || paused || asking) return;
     if (invuln > 0) invuln -= dt;
+    // 关卡门（参考 MC 节奏：约每 16 秒一次英语大招）
+    quizClock -= dt;
+    if (quizClock <= 0 && running && !asking) { quizClock = 16; bomb(); }
     // 背景星移动
     stars.forEach(s => { s.y += (20 + s.s * 12) * dt; if (s.y > g.H) { s.y = 0; s.x = Math.random() * g.W; } });
     // 玩家移动（指针跟随 + 键盘）
@@ -169,11 +179,6 @@ const PlaneWar = (() => {
 
   // 键盘持续状态
   const keys = { left: false, right: false, up: false, down: false };
-  (function () {
-    const map = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' };
-    window.addEventListener('keydown', e => { if (map[e.key]) { keys[map[e.key]] = true; } });
-    window.addEventListener('keyup', e => { if (map[e.key]) { keys[map[e.key]] = false; } });
-  })();
 
   function afterPlay() {
     const b = document.getElementById('pwBomb'); if (b) b.onclick = () => bomb();

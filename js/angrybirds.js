@@ -10,9 +10,10 @@ const AngryBirds = (() => {
   let unit = null, g = null, paused = false, running = false, asking = false;
   let groundY, slingX, slingY, bird = null, blocks = [], pigs = [], trail = [];
   let birdsLeft = 5, dragging = false, dragPt = null, bombNext = false;
-  const MAXR = 95;          // 最大拉拽半径
-  const POWER = 7.2;        // 发射力度系数
+  const MAXR = 150;         // 最大拉拽半径（更大更好发力）
+  const POWER = 5.4;        // 发射力度系数
   const G_STEP = 1300 * 0.028; // 轨迹预览每步重力增量
+  const MIN_SPEED = 140;    // 最小出射速度，避免轻拉「不动」
 
   function play(u) {
     GameKit.cleanup();
@@ -91,8 +92,15 @@ const AngryBirds = (() => {
   }
   function launch() {
     if (!dragPt) return;
-    let dx = slingX - dragPt.x, dy = slingY - dragPt.y;   // 反方向发射
-    bird = { x: slingX, y: slingY, vx: dx * POWER, vy: dy * POWER, r: 18, bomb: bombNext, alive: true, rest: 0 };
+    let dx = slingX - dragPt.x, dy = slingY - dragPt.y;   // 拉弓方向的反方向 = 发射方向
+    let vx = dx * POWER, vy = dy * POWER;
+    const sp = Math.hypot(vx, vy);
+    if (sp < MIN_SPEED) {                                  // 轻拉也保证小鸟向前飞出，不会「不动」
+      const ang = Math.atan2(dy, dx);
+      vx = Math.cos(ang) * MIN_SPEED;
+      vy = Math.sin(ang) * MIN_SPEED - 120;                // 略微上扬
+    }
+    bird = { x: dragPt.x, y: dragPt.y, vx, vy, r: 18, bomb: bombNext, alive: true, rest: 0 };
     bombNext = false;
     birdsLeft--; document.getElementById('abBirds').textContent = '🐦 ' + Math.max(0, birdsLeft);
     Audio2.pop();
@@ -193,25 +201,44 @@ const AngryBirds = (() => {
     ctx.lineWidth = 6;
     ctx.beginPath(); ctx.moveTo(slingX, slingY); ctx.lineTo(slingX - 9, slingY - 16); ctx.moveTo(slingX, slingY); ctx.lineTo(slingX + 9, slingY - 16); ctx.stroke();
     // 方块
-    const col = { wood: '#c8924a', stone: '#9aa0a6', ice: '#9fd8ff' };
-    blocks.forEach(b => { if (b.dead) return; ctx.fillStyle = col[b.mat]; ctx.fillRect(b.x, b.y, b.w, b.h); ctx.strokeStyle = 'rgba(0,0,0,0.28)'; ctx.lineWidth = 2; ctx.strokeRect(b.x, b.y, b.w, b.h); ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fillRect(b.x + 3, b.y + 3, b.w - 6, 4); });
+    blocks.forEach(b => {
+      if (b.dead) return;
+      const x = b.x, y = b.y, w = b.w, h = b.h;
+      if (b.mat === 'wood') {
+        ctx.fillStyle = '#c8924a'; ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = 'rgba(120,80,30,0.6)'; ctx.lineWidth = 1;
+        for (let yy = y + 5; yy < y + h; yy += 7) { ctx.beginPath(); ctx.moveTo(x, yy); ctx.lineTo(x + w, yy); ctx.stroke(); }
+        ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillRect(x + 3, y + 3, w - 6, 3);
+      } else if (b.mat === 'stone') {
+        ctx.fillStyle = '#9aa0a6'; ctx.fillRect(x, y, w, h);
+        ctx.fillStyle = '#aeb4ba'; ctx.fillRect(x + 2, y + 2, w - 4, 4);
+        ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.fillRect(x + 2, y + h - 5, w - 4, 3);
+      } else {
+        ctx.fillStyle = 'rgba(150,216,255,0.9)'; ctx.fillRect(x, y, w, h);
+        ctx.fillStyle = 'rgba(255,255,255,0.65)'; ctx.fillRect(x + 3, y + 3, w - 6, 4);
+      }
+      ctx.strokeStyle = 'rgba(0,0,0,0.32)'; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h);
+    });
     // 猪
     pigs.forEach(pg => { if (pg.alive) Sprites.pig(ctx, pg.x, pg.y, 22); });
     // 瞄准轨迹
     if (dragging && dragPt) {
       let dx = slingX - dragPt.x, dy = slingY - dragPt.y;
-      let px = slingX, py = slingY, vx = dx * POWER, vy = dy * POWER;
+      let px = dragPt.x, py = dragPt.y, vx = dx * POWER, vy = dy * POWER;
       ctx.fillStyle = 'rgba(255,170,30,0.85)';
       for (let i = 0; i < 36; i++) { vy += G_STEP; px += vx * 0.028; py += vy * 0.028; if (i % 2 === 0) { ctx.beginPath(); ctx.arc(px, py, 3, 0, 7); ctx.fill(); } if (py > groundY) break; }
       // 拉拽指示
       ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
       ctx.beginPath(); ctx.moveTo(slingX, slingY); ctx.lineTo(dragPt.x, dragPt.y); ctx.stroke(); ctx.setLineDash([]);
     }
-    // 小鸟（待发/飞行）
-    if (bird && bird.alive) Sprites.bird(ctx, bird.x, bird.y, 18, bird.bomb);
-    else Sprites.bird(ctx, slingX, slingY, 18, bombNext);
+    // 小鸟（飞行中 / 待发 / 拖拽中）
+    let bx, by;
+    if (bird && bird.alive) { bx = bird.x; by = bird.y; }
+    else if (dragging && dragPt) { bx = dragPt.x; by = dragPt.y; }
+    else { bx = slingX; by = slingY; }
+    if (bird && bird.alive) Sprites.bird(ctx, bx, by, 18, bird.bomb);
+    else Sprites.bird(ctx, bx, by, 18, bombNext);
     // 皮筋连到鸟
-    const bx = bird && bird.alive ? bird.x : slingX, by = bird && bird.alive ? bird.y : slingY;
     ctx.strokeStyle = '#3a2a1a'; ctx.lineWidth = 4;
     ctx.beginPath(); ctx.moveTo(slingX - 9, slingY - 16); ctx.lineTo(bx, by); ctx.lineTo(slingX + 9, slingY - 16); ctx.stroke();
   }
