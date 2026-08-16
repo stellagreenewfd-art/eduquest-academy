@@ -15,7 +15,7 @@ const TempleRun = (() => {
   function play(u) {
     GameKit.cleanup();
     unit = u; running = true; paused = false; asking = false;
-    lane = 1; dist = 0; speed = 250; score = 0; lives = 3; invuln = 0; jumpT = 0; slideT = 0;
+    lane = 1; dist = 0; speed = 170; score = 0; lives = 3; invuln = 0; jumpT = 0; slideT = 0;
     obstacles = []; coins = [];
     UI.screen(`
       <div class="topbar">
@@ -59,7 +59,7 @@ const TempleRun = (() => {
 
   function update(dt) {
     if (!running || paused || asking) return;
-    speed = Math.min(420, speed + dt * 6);
+    speed = Math.min(300, speed + dt * 4);
     dist += speed * dt;
     if (jumpT > 0) jumpT -= dt;
     if (slideT > 0) slideT -= dt;
@@ -154,23 +154,33 @@ const TempleRun = (() => {
       ctx.fillRect(laneX(i) - W * 0.14, groundY, W * 0.28, H - groundY);
     }
     ctx.fillStyle = '#caa46a'; ctx.fillRect(0, groundY, W, H - groundY);
-    // 障碍
-    ctx.font = '30px serif'; ctx.textAlign = 'center';
+    // 障碍（精细形状）
     obstacles.forEach(o => {
       const sx = g.W * 0.26 + (o.d - dist);
       if (sx < -40 || sx > W + 40) return;
-      ctx.fillText(o.type === 'log' ? '🌿' : o.type === 'fire' ? '🔥' : '🕳️', laneX(o.lane), groundY - 6);
+      const ly = groundY;
+      if (o.type === 'log') {
+        ctx.fillStyle = '#8a5a2b'; ctx.fillRect(sx - 15, ly - 24, 30, 24);
+        ctx.fillStyle = '#6b4420'; ctx.fillRect(sx - 15, ly - 7, 30, 7);
+        ctx.strokeStyle = '#5a3a1a'; ctx.lineWidth = 2; ctx.strokeRect(sx - 15, ly - 24, 30, 24);
+      } else if (o.type === 'fire') {
+        ctx.fillStyle = '#ff7a18';
+        ctx.beginPath(); ctx.moveTo(sx - 13, ly); ctx.lineTo(sx, ly - 30); ctx.lineTo(sx + 13, ly); ctx.fill();
+        ctx.fillStyle = '#ffd23f';
+        ctx.beginPath(); ctx.moveTo(sx - 7, ly); ctx.lineTo(sx, ly - 16); ctx.lineTo(sx + 7, ly); ctx.fill();
+      } else {
+        ctx.fillStyle = '#1a1024'; ctx.fillRect(sx - 17, ly - 4, 34, 22);
+      }
     });
     // 金币
-    ctx.font = '22px serif';
-    coins.forEach(c => { if (c.taken) return; const sx = g.W * 0.26 + (c.d - dist); if (sx < -30 || sx > W + 30) return; ctx.fillText('🪙', laneX(c.lane), groundY - 40); });
-    // 玩家
+    coins.forEach(c => { if (c.taken) return; const sx = g.W * 0.26 + (c.d - dist); if (sx < -30 || sx > W + 30) return; Sprites.coin(ctx, laneX(c.lane), groundY - 42, 11); });
+    // 玩家（原创探险者，朝右奔跑）
     const px = laneX(lane);
     let py = groundY;
     if (jumpT > 0) py = groundY - 60 * Math.sin((0.6 - jumpT) / 0.6 * Math.PI);
-    const icon = slideT > 0 ? '🛡️' : invuln > 0 && Math.floor(invuln * 10) % 2 ? '💫' : '🏃';
-    ctx.font = '34px serif';
-    ctx.fillText(icon, px, py - 6);
+    if (invuln > 0 && Math.floor(invuln * 10) % 2) { ctx.save(); ctx.globalAlpha = 0.5; }
+    Sprites.explorer(ctx, px, py, slideT > 0 ? 30 : 44);
+    if (invuln > 0 && Math.floor(invuln * 10) % 2) ctx.restore();
   }
 
   function win() {

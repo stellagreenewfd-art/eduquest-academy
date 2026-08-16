@@ -64,7 +64,7 @@ const Main = (() => {
         <p class="home-tag">选教材 · 选游戏 · 在冒险里把英语学扎实</p>
         <div class="home-btns">
           <button class="btn btn-big btn-primary" id="homeStart">▶ 开始冒险</button>
-          ${hasProgress ? '<button class="btn btn-big" id="homeContinue">🔁 继续上次的进度</button>' : ''}
+          ${hasProgress ? `<button class="btn btn-big" id="homeContinue">${getWorld(Save.data.selWorld || 'mc').icon} 继续${getWorld(Save.data.selWorld || 'mc').name}</button>` : ''}
           <button class="btn btn-big" id="homeBooks">📚 家长：选择教材</button>
           <button class="btn btn-big" id="homeVoice">🎤 声音设置</button>
         </div>
@@ -73,9 +73,17 @@ const Main = (() => {
     `, 'home-screen');
     document.getElementById('homeStart').onclick = () => { Audio2.click(); books(); };
     const cont = document.getElementById('homeContinue');
-    if (cont) cont.onclick = () => { Audio2.click(); worlds(); };
+    if (cont) cont.onclick = () => resume();
     document.getElementById('homeBooks').onclick = () => { Audio2.click(); books(); };
     document.getElementById('homeVoice').onclick = () => { Audio2.click(); voiceSettings(); };
+  }
+
+  /* ---------- 继续上次的游戏（联动上次选择的教材+游戏世界） ---------- */
+  function resume() {
+    Audio2.click();
+    if (Save.data.selBook != null) { Cur.bookId = Save.data.selBook; selectBook(Cur.bookId); }
+    if (Save.data.selWorld) Cur.world = Save.data.selWorld;
+    map();
   }
 
   /* ---------- 家长选教材（按出版社分组，覆盖全系列全年级） ---------- */

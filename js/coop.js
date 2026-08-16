@@ -93,10 +93,9 @@ const Coop = (() => {
     ctx.fillStyle = '#c98a3a'; ctx.fillRect(-70, -6, 140, 12); ctx.restore();
     // 桥（bothOn 时显示）
     if (bothOn) { ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(sx, groundY - 12); ctx.lineTo(sx, groundY - H * 0.42); ctx.stroke(); }
-    // 角色
-    ctx.font = '34px serif';
-    ctx.fillText('🧑‍🚀', codyX, groundY - 6);
-    ctx.fillText('🧑‍🎤', mayX, groundY - 6);
+    // 角色（原创小孩，Cody 蓝、May 紫）
+    Sprites.kid(ctx, codyX, groundY, 46, '#2f6fd0', '#1f4f9c');
+    Sprites.kid(ctx, mayX, groundY, 46, '#c44ec4', '#8a2f8a');
     // 名字
     ctx.font = '14px sans-serif'; ctx.fillStyle = '#9cf';
     ctx.fillText('Cody', codyX, groundY + 18);

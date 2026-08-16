@@ -177,12 +177,11 @@ const PacMan = (() => {
       const t = maze[r][c]; if (t === '.') { ctx.beginPath(); ctx.arc(offX + (c + 0.5) * TS, offY + (r + 0.5) * TS, 3, 0, 7); ctx.fill(); }
       else if (t === 'o') { ctx.beginPath(); ctx.arc(offX + (c + 0.5) * TS, offY + (r + 0.5) * TS, 7, 0, 7); ctx.fill(); }
     }
-    // 幽灵
-    ctx.font = (TS * 0.9) + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ghosts.forEach(g1 => { if (fright > 0) ctx.fillStyle = '#222'; ctx.fillText(g1.fright && fright > 0 ? '😨' : g1.icon, g1.x, g1.y); });
-    // pac
-    ctx.fillText('🟡', pac.x, pac.y);
-    ctx.textBaseline = 'alphabetic';
+    // 幽灵（原创，受惊变蓝脸）
+    const gc = ['#ff5b5b', '#5bc8ff', '#ff9d5b', '#ff5bd0'];
+    ghosts.forEach((g1, i) => { Sprites.ghost(ctx, g1.x, g1.y, TS * 0.42, gc[i % 4], fright > 0); });
+    // 吃豆人（开口朝运动方向）
+    Sprites.pacman(ctx, pac.x, pac.y, TS * 0.44, pac.dir.x, pac.dir.y);
   }
 
   function win() {

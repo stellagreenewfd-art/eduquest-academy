@@ -172,9 +172,8 @@ const AngryBirds = (() => {
     // 方块
     const col = { wood: '#c8924a', stone: '#9aa0a6', ice: '#9fd8ff' };
     blocks.forEach(b => { if (b.dead) return; ctx.fillStyle = col[b.mat]; ctx.fillRect(b.x, b.y, b.w, b.h); ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.strokeRect(b.x, b.y, b.w, b.h); });
-    // 猪
-    ctx.font = '34px serif'; ctx.textAlign = 'center';
-    pigs.forEach(pg => { if (pg.alive) ctx.fillText('🐷', pg.x, pg.y + 12); });
+    // 猪（原创绿猪）
+    pigs.forEach(pg => { if (pg.alive) Sprites.pig(ctx, pg.x, pg.y, 22); });
     // 瞄准轨迹
     if (dragging && dragPt) {
       let dx = slingX - dragPt.x, dy = slingY - dragPt.y; const d = Math.hypot(dx, dy); const max = 90;
@@ -183,9 +182,9 @@ const AngryBirds = (() => {
       ctx.fillStyle = 'rgba(255,80,80,0.7)';
       for (let i = 0; i < 28; i++) { vy += 1300 * 0.03; px += vx * 0.03; py += vy * 0.03; if (i % 2 === 0) { ctx.beginPath(); ctx.arc(px, py, 3, 0, 7); ctx.fill(); } }
     }
-    // 小鸟
-    if (bird && bird.alive) { ctx.font = '30px serif'; ctx.fillText(bird.bomb ? '💣' : '🐦', bird.x, bird.y + 12); }
-    else { ctx.font = '30px serif'; ctx.fillText('🐦', slingX, slingY + 12); } // 待发
+    // 小鸟（原创红鸟 / 炸弹鸟）
+    if (bird && bird.alive) Sprites.bird(ctx, bird.x, bird.y, 17, bird.bomb);
+    else Sprites.bird(ctx, slingX, slingY, 17, false); // 待发
     // 弹弓皮筋
     ctx.strokeStyle = '#3a2a1a'; ctx.lineWidth = 4;
     ctx.beginPath(); ctx.moveTo(slingX - 6, slingY); ctx.lineTo(bird && bird.alive ? bird.x : slingX, bird && bird.alive ? bird.y : slingY); ctx.lineTo(slingX + 6, slingY); ctx.stroke();

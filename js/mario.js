@@ -42,7 +42,7 @@ const Mario = (() => {
     pits = []; coins = []; blocks = []; goombas = []; cps = [];
     let x = 360;
     while (x < LEN - 300) {
-      const w = 90 + Math.random() * 60;
+      const w = 70 + Math.random() * 40;
       pits.push({ a: x, b: x + w });
       // ? 砖在坑前/后（高度在跳跃可命中范围内）
       blocks.push({ x: x - 120, y: gH() - 130, used: false });
@@ -68,12 +68,12 @@ const Mario = (() => {
   }
   function jump() {
     if (!running || paused || asking) return;
-    if (player.onGround) { player.vy = -560; player.onGround = false; Audio2.pop(); }
+    if (player.onGround) { player.vy = -520; player.onGround = false; Audio2.pop(); }
   }
 
   function update(dt) {
     if (!running || paused || asking) return;
-    const G = 1500, SPEED = 175, groundY = gH();
+    const G = 1300, SPEED = 140, groundY = gH();
     // 自动前进
     player.wx += SPEED * dt;
     // 重力
@@ -176,22 +176,28 @@ const Mario = (() => {
       const inPit = pits.some(p => x > p.a && x < p.b);
       if (!inPit) ctx.fillRect(sx, groundY, 12, 8);
     }
-    // ? 砖
-    ctx.font = '30px serif';
-    blocks.forEach(b => { const sx = b.x - camera; if (sx > -40 && sx < W + 40) ctx.fillText(b.used ? '🟫' : '❓', sx + 16, b.y + 28); });
+    // ? 砖（方块）
+    blocks.forEach(b => {
+      const sx = b.x - camera;
+      if (sx > -44 && sx < W + 44) {
+        const s = 34;
+        ctx.fillStyle = b.used ? '#7a5230' : '#c98a3a';
+        ctx.fillRect(sx, b.y, s, s);
+        ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(sx, b.y + s - 5, s, 5);
+        ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fillRect(sx, b.y, s, 4);
+        if (!b.used) { ctx.fillStyle = '#fff7d6'; ctx.font = 'bold 24px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('?', sx + s / 2, b.y + s / 2 + 1); ctx.textBaseline = 'alphabetic'; }
+      }
+    });
     // 金币
-    ctx.font = '22px serif';
-    coins.forEach(c => { if (c.taken) return; const sx = c.x - camera; if (sx > -30 && sx < W + 30) ctx.fillText('🪙', sx, c.y); });
+    coins.forEach(c => { if (c.taken) return; const sx = c.x - camera; if (sx > -30 && sx < W + 30) Sprites.coin(ctx, sx, c.y, 11); });
     // 板栗怪
-    ctx.font = '30px serif';
-    goombas.forEach(o => { if (!o.alive) return; const sx = o.x - camera; if (sx > -40 && sx < W + 40) ctx.fillText('👾', sx + 16, o.y + 30); });
+    goombas.forEach(o => { if (!o.alive) return; const sx = o.x - camera; if (sx > -40 && sx < W + 40) Sprites.goomba(ctx, sx + 16, o.y + 34, 34); });
     // 检查站旗
     cps.forEach(cp => { const sx = cp.x - camera; if (sx > -30 && sx < W + 30) ctx.fillText(cp.done ? '✅' : '🚩', sx, groundY - 40); });
     // 终点旗
     ctx.fillText('🏁', goalX - camera, groundY - 50);
-    // 玩家
-    ctx.font = '34px serif';
-    ctx.fillText('🏃', player.wx - camera, player.y + player.h - 2);
+    // 玩家（原创红帽英雄，朝右奔跑）
+    Sprites.hero(ctx, player.wx - camera + player.w / 2, player.y + player.h, player.h);
   }
 
   function win() {
