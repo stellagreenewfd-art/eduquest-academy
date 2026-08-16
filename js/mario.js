@@ -44,11 +44,11 @@ const Mario = (() => {
     while (x < LEN - 300) {
       const w = 90 + Math.random() * 60;
       pits.push({ a: x, b: x + w });
-      // ? 砖在坑前/后
-      blocks.push({ x: x - 120, y: gH() - 150, used: false });
-      blocks.push({ x: x + w + 60, y: gH() - 150, used: false });
-      // 金币弧线
-      for (let i = 0; i < 5; i++) coins.push({ x: x - 40 + i * 26, y: gH() - 200 - Math.sin(i / 4 * Math.PI) * 70, taken: false });
+      // ? 砖在坑前/后（高度在跳跃可命中范围内）
+      blocks.push({ x: x - 120, y: gH() - 130, used: false });
+      blocks.push({ x: x + w + 60, y: gH() - 130, used: false });
+      // 金币弧线（跳跃可达）
+      for (let i = 0; i < 5; i++) coins.push({ x: x - 40 + i * 26, y: gH() - 120 - Math.sin(i / 4 * Math.PI) * 38, taken: false });
       // 板栗怪
       if (Math.random() < 0.8) goombas.push({ x: x + w + 160, y: gH() - 36, w: 34, h: 34, vx: -50, alive: true });
       x += w + 280 + Math.random() * 160;
@@ -56,8 +56,8 @@ const Mario = (() => {
     // 旗点检查站
     cps.push({ x: LEN * 0.4, done: false });
     cps.push({ x: LEN * 0.72, done: false });
-    // 沿途散落金币
-    for (let i = 0; i < 14; i++) coins.push({ x: 200 + i * 220, y: gH() - 120 - (i % 3) * 30, taken: false });
+    // 沿途散落金币（跳跃可达）
+    for (let i = 0; i < 14; i++) coins.push({ x: 200 + i * 220, y: gH() - 90 - (i % 3) * 22, taken: false });
     lv = { LEN };
   }
   function gH() { return (g ? g.H : 480) * 0.78; }
